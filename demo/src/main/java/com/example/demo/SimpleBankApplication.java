@@ -86,6 +86,7 @@ class BankingService {
         if (account != null) {
             return new TransactionResponse(TransactionStatus.ACCEPTED, account.getBalance());
         } else {
+            System.out.println("Account not found for PESEL: " + pesel);
             return new TransactionResponse(TransactionStatus.DECLINED, 0);
         }
     }
@@ -110,7 +111,6 @@ public class SimpleBankApplication {
         SpringApplication.run(SimpleBankApplication.class, args);
     }
 
-    // Kontroler obsługujący żądania HTTP
     @RestController
     @RequestMapping("/bank")
     static class BankController {
@@ -124,11 +124,13 @@ public class SimpleBankApplication {
 
         // Endpoint do rejestracji konta
         @PostMapping("/register")
-        public TransactionResponse registerAccount(@RequestParam String pesel,
-                                                   @RequestParam double initialBalance,
-                                                   @RequestParam String currency,
-                                                   @RequestParam String firstName,
-                                                   @RequestParam String lastName) {
+        public TransactionResponse registerAccount(@RequestBody Map<String, Object> request) {
+            String pesel = (String) request.get("pesel");
+            double initialBalance = (double) request.get("initialBalance");
+            String currency = (String) request.get("currency");
+            String firstName = (String) request.get("firstName");
+            String lastName = (String) request.get("lastName");
+
             return bankingService.registerAccount(pesel, initialBalance, currency, firstName, lastName);
         }
 
@@ -144,4 +146,5 @@ public class SimpleBankApplication {
             return bankingService.getAccountsWithBalanceGreaterThan(threshold);
         }
     }
+
 }
